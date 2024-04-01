@@ -30,18 +30,15 @@ string getDescription(FBColour);
 
 struct FBFruitingBodyDetails
 {
-	FBFruitingBodyType type;
-	bool has_distinct_cap;
-	FBCapShape cap_shape;
+	FBFruitingBodyType type = (FBFruitingBodyType)(-1);
+	bool has_distinct_cap = false;
+	FBCapShape cap_shape = (FBCapShape)(-1);
 	FBSizeRange cap_diameter;
-	FBColour cap_colour;
-	string cap_description;
-	FBColour stipe_colour;
-	string stipe_description;
+	FBColour cap_colour = (FBColour)(-1);
+	string cap_description = "";
+	FBColour stipe_colour = (FBColour)(-1);
+	string stipe_description = "";
 };
-
-string serialise(const FBFruitingBodyDetails&);
-void deserialise(const string&, FBFruitingBodyDetails&);
 
 enum FBSporeSurfaceType
 {
@@ -71,19 +68,15 @@ string getDescription(FBGillShapeType);
 
 struct FBSporeSurfaceDetails
 {
-	FBSporeSurfaceType type;
-	FBGillAttachmentType gill_attachment;
-	FBGillShapeType gill_shape;
+	FBSporeSurfaceType type = (FBSporeSurfaceType)(-1);
+	FBGillAttachmentType gill_attachment = (FBGillAttachmentType)(-1);
+	FBGillShapeType gill_shape = (FBGillShapeType)(-1);
 };
-
-string serialise(const FBSporeSurfaceDetails&);
-void deserialise(const string&, FBSporeSurfaceDetails&);
 
 enum FBFeedingType
 {
 	SAPROBIC,
-	PARASITIC,
-	NONE
+	PARASITIC
 	// TODO:
 };
 
@@ -94,9 +87,6 @@ struct FBReproductiveDetails
 	// TODO:
 };
 
-string serialise(const FBReproductiveDetails&);
-void deserialise(const string&, FBReproductiveDetails&);
-
 enum FBSporeShape
 {
 	// TODO:
@@ -106,22 +96,16 @@ string getDescription(FBSporeShape);
 
 struct FBSporeDetails
 {
-	bool has_spores;
-	FBSporeShape spore_shape;
+	bool has_spores = false;
+	FBSporeShape spore_shape = (FBSporeShape)(-1);
 	FBSizeRange spore_size_range;
-	FBColour spore_print_colour;
+	FBColour spore_print_colour = (FBColour)(-1);
 };
-
-string serialise(const FBSporeDetails&);
-void deserialise(const string&, FBSporeDetails&);
 
 struct FBDistribution
 {
 	// TODO:
 };
-
-string serialise(const FBDistribution&);
-void deserialise(const string&, FBDistribution&);
 
 enum FBHabitatType
 {
@@ -147,8 +131,8 @@ enum FBTag
 	HAS_TEETH,
 	HAS_SAC,
 
-	SAPROBIC,
-	PARASITIC
+	FEEDS_SAPROBICALLY,
+	FEEDS_PARASITICALLY
 };
 
 string getDescription(FBTag);
@@ -161,10 +145,7 @@ struct FBFungus : public FBTaxon
 	FBSporeDetails spore_details;
 	FBDistribution distribution;
 	vector<FBHabitatType> habitat_type;
-	FBFeedingType feeding_type;
+	FBFeedingType feeding_type = (FBFeedingType)(-1);
 
 	vector<FBTag> tags;
 };
-
-string serialise(const FBFungus&);
-void deserialise(const string&, FBFungus&);

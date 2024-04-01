@@ -7,5 +7,6 @@ FBDatabase::FBDatabase(string path)
 
 FBDatabase::~FBDatabase()
 {
-	if (is_open && top_level) flush();
+	//if (is_open && top_level) flush();
+	// TODO: delete entire taxonomic tree
 }

@@ -78,7 +78,6 @@ string getDescription(FBFeedingType feeding_type)
 	{
 	case FBFeedingType::SAPROBIC: return "Saprobic";
 	case FBFeedingType::PARASITIC: return "Parasitic";
-	case FBFeedingType::NONE: return "None";
 	default: return "Unknown feeding type";
 	}
 }
@@ -117,8 +116,8 @@ string getDescription(FBTag tag)
 	case FBTag::HAS_TEETH: return "Has teeth";
 	case FBTag::HAS_SAC: return "Has sac";
 
-	case FBTag::SAPROBIC: return "Saprobic";
-	case FBTag::PARASITIC: return "Parasitic";
+	case FBTag::FEEDS_SAPROBICALLY: return "Feeds saprobically";
+	case FBTag::FEEDS_PARASITICALLY: return "Feeds parasitically";
 
 	default: return "Unknown tag";
 	}

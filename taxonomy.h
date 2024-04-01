@@ -23,15 +23,12 @@ string getDescription(FBTaxonLevel);
 
 struct FBTaxon
 {
-	string name;
-	FBTaxonLevel level;
-	string description;
+	string name = "Unnamed taxon";
+	FBTaxonLevel level = (FBTaxonLevel)(-1);
+	string description = "";
 
 	vector<FBTaxon*> sub_taxa;
-	FBTaxon* parent_taxa;
+	FBTaxon* parent_taxa = NULL;
 };
-
-string serialise(const FBTaxon&);
-void deserialise(const string&, FBTaxon&);
 
 struct FBFungus;

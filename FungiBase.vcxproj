@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClInclude Include="database.h" />
     <ClInclude Include="fungi.h" />
+    <ClInclude Include="serialise.h" />
     <ClInclude Include="taxonomy.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

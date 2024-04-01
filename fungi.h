@@ -144,8 +144,8 @@ struct FBFungus : public FBTaxon
 	FBReproductiveDetails reproductive_details;
 	FBSporeDetails spore_details;
 	FBDistribution distribution;
-	vector<FBHabitatType> habitat_type;
+	set<FBHabitatType> habitat_type;
 	FBFeedingType feeding_type = (FBFeedingType)(-1);
 
-	vector<FBTag> tags;
+	set<FBTag> tags;
 };

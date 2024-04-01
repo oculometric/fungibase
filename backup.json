@@ -1,2 +1,106 @@
-{ "description" : "Contains all fungi.", "level" : 0, "name" : "Fungi", "sub_taxa" : [ { "description" : "Filamentous fungi composed of hyphae (mostly).", "level" : 1, "name" : "Basidiomycota", "sub_taxa" : [ { "description" : "", "level" : 3, "name" : "Agaricomycetes", "sub_taxa" : [ { "description" : "", "level" : 5, "name" : "Agaricales", "sub_taxa" : [ { "description" : "", "level" : 6, "name" : "Amanitaceae", "sub_taxa" : [ { "description" : "", "level" : 7, "name" : "Amanita", "sub_taxa" : [ { "description" : "Commonly known as the fly agaric.", "distribution" : {  }, "feeding_type" : 0, "fruiting_body_details" : { "cap_colour" : -1, "cap_description" : "", "cap_diameter" : {  }, "cap_shape" : -1, "has_distinct_cap" : 0, "stipe_colour" : -1, "stipe_description" : "", "type" : -1 }, "habitat_type" : [  ], "level" : 8, "name" : "muscaria", "reproductive_details" : {  }, "spore_details" : { "has_spores" : 0, "spore_print_colour" : -1, "spore_shape" : -1, "spore_size_range" : {  } }, "spore_surface_details" : { "gill_attachment" : -1, "gill_shape" : -1, "type" : -1 }, "sub_taxa" : [  ], "tags" : [  ] } ] } ] } ] } ] } ] } ] }
-
+{
+    "description": "Contains all fungi.",
+    "level": 0,
+    "name": "Fungi",
+    "sub_taxa": [
+        {
+            "description": "Filamentous fungi composed of hyphae (mostly).",
+            "level": 1,
+            "name": "Basidiomycota",
+            "sub_taxa": [
+                {
+                    "description": "",
+                    "level": 3,
+                    "name": "Agaricomycetes",
+                    "sub_taxa": [
+                        {
+                            "description": "",
+                            "level": 5,
+                            "name": "Agaricales",
+                            "sub_taxa": [
+                                {
+                                    "description": "",
+                                    "level": 6,
+                                    "name": "Amanitaceae",
+                                    "sub_taxa": [
+                                        {
+                                            "description": "",
+                                            "level": 7,
+                                            "name": "Amanita",
+                                            "sub_taxa": [
+                                                {
+                                                    "description": "Commonly known as the fly agaric.",
+                                                    "distribution": {},
+                                                    "feeding_type": 0,
+                                                    "fruiting_body_details": {
+                                                        "cap_colour": -1,
+                                                        "cap_description": "",
+                                                        "cap_diameter": {},
+                                                        "cap_shape": -1,
+                                                        "has_distinct_cap": 0,
+                                                        "stipe_colour": -1,
+                                                        "stipe_description": "",
+                                                        "type": -1
+                                                    },
+                                                    "habitat_type": [],
+                                                    "level": 8,
+                                                    "name": "muscaria",
+                                                    "reproductive_details": {},
+                                                    "spore_details": {
+                                                        "has_spores": 0,
+                                                        "spore_print_colour": -1,
+                                                        "spore_shape": -1,
+                                                        "spore_size_range": {}
+                                                    },
+                                                    "spore_surface_details": {
+                                                        "gill_attachment": -1,
+                                                        "gill_shape": -1,
+                                                        "type": -1
+                                                    },
+                                                    "sub_taxa": [],
+                                                    "tags": []
+                                                },
+                                                {
+                                                    "description": "Commonly known as Caesar's Mushroom.",
+                                                    "distribution": {},
+                                                    "feeding_type": -1,
+                                                    "fruiting_body_details": {
+                                                        "cap_colour": -1,
+                                                        "cap_description": "",
+                                                        "cap_diameter": {},
+                                                        "cap_shape": -1,
+                                                        "has_distinct_cap": 0,
+                                                        "stipe_colour": -1,
+                                                        "stipe_description": "",
+                                                        "type": -1
+                                                    },
+                                                    "habitat_type": [],
+                                                    "level": 8,
+                                                    "name": "caesarea",
+                                                    "reproductive_details": {},
+                                                    "spore_details": {
+                                                        "has_spores": 0,
+                                                        "spore_print_colour": -1,
+                                                        "spore_shape": -1,
+                                                        "spore_size_range": {}
+                                                    },
+                                                    "spore_surface_details": {
+                                                        "gill_attachment": -1,
+                                                        "gill_shape": -1,
+                                                        "type": -1
+                                                    },
+                                                    "sub_taxa": [],
+                                                    "tags": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

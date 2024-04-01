@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <set>
 
 using namespace std;
 
@@ -27,8 +27,8 @@ struct FBTaxon
 	FBTaxonLevel level = (FBTaxonLevel)(-1);
 	string description = "";
 
-	vector<FBTaxon*> sub_taxa;
-	FBTaxon* parent_taxa = NULL;
+	set<FBTaxon*> sub_taxa;
+	FBTaxon* parent_taxon = NULL;
 };
 
 struct FBFungus;

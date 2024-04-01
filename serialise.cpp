@@ -275,8 +275,8 @@ void deserialise(FBJsonObject& taxon_object, FBTaxon& taxon)
 			sub_taxon = new FBFungus();
 			deserialise(obj, *((FBFungus*)sub_taxon));
 		}
-		sub_taxon->parent_taxa = &taxon;
-		taxon.sub_taxa.push_back(sub_taxon);
+		sub_taxon->parent_taxon = &taxon;
+		taxon.sub_taxa.insert(sub_taxon);
 	}
 }
 
@@ -424,11 +424,11 @@ void deserialise(FBJsonObject& fungus_object, FBFungus& fungus)
 	deserialise(object, fungus.distribution);
 	for (FBJsonElement el : getArrayElement(fungus_object["habitat_type"]))
 	{
-		fungus.habitat_type.push_back((FBHabitatType)getIntElement(el));
+		fungus.habitat_type.insert((FBHabitatType)getIntElement(el));
 	}
 	fungus.feeding_type = (FBFeedingType)getIntElement(fungus_object["feeding_type"]);
 	for (FBJsonElement el : getArrayElement(fungus_object["tags"]))
 	{
-		fungus.tags.push_back((FBTag)getIntElement(el));
+		fungus.tags.insert((FBTag)getIntElement(el));
 	}
 }

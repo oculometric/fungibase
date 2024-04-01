@@ -1,30 +1,34 @@
 #pragma once
 
+#include <map>
 #include "taxonomy.h"
-
-// TODO: convert all vectors to sets (non-ordered, fast-searchable, unique-item)
 
 class FBDatabase
 {
 private:
 	FBTaxon* top_level;
 
-	vector<FBFungus*> all_fungi_cards;
+	map<string, FBFungus*> fungi_index;
 
 	string file_address;
 	bool is_open;
 
 	void unloadDatabase();
+	bool checkIsInHeirarchy(FBTaxon*);
 
 public:
 	FBDatabase(string path);
 
-	// TODO: access functions
-
 	bool reload();
-	vector<FBFungus*> search(bool(*evaluator)(const FBFungus&));
-	bool insertSpecies(const FBFungus);
+	set<FBFungus*> search(bool(*evaluator)(const FBFungus&));
+	FBFungus* findBinomial(string binomial_name);
+	FBTaxon* find(string name, FBTaxonLevel level);
+	set<FBTaxon*> list(FBTaxon*, FBTaxonLevel);
+	bool insert(const FBTaxon&, FBTaxon*);
+	bool remove(FBTaxon*);
 	bool flush();
 
+	static string getBinomialName(const FBTaxon&);
+	
 	~FBDatabase();
 };

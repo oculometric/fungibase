@@ -14,13 +14,16 @@ private:
 	string file_address;
 	bool is_open;
 
+	void unloadDatabase();
+
 public:
 	FBDatabase(string path);
 
-	// TODO: file functions
 	// TODO: access functions
+
 	bool reload();
 	vector<FBFungus*> search(bool(*evaluator)(const FBFungus&));
+	bool insertSpecies(const FBFungus);
 	bool flush();
 
 	~FBDatabase();

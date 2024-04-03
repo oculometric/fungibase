@@ -42,4 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="raylib-5.0_win64_msvc16\lib\raylibdll.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+  </ItemGroup>
 </Project>

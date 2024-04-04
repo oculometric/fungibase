@@ -28,6 +28,8 @@ public:
 	bool remove(FBTaxon*);
 	bool flush();
 
+	bool isOpen();
+
 	static string getBinomialName(const FBTaxon&);
 	
 	~FBDatabase();

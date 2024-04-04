@@ -276,6 +276,11 @@ bool FBDatabase::flush()
 	return true;
 }
 
+bool FBDatabase::isOpen()
+{
+	return is_open;
+}
+
 FBDatabase::~FBDatabase()
 {
 	if (is_open && top_level) flush();

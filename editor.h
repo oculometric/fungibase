@@ -20,7 +20,10 @@ private:
 
 	FBDatabase* database;
 
-	char* search_text;
+	FBTaxon* current_taxon = NULL;
+	char* search_text = NULL;
+	bool search_box_focussed = false;
+	char* description_text = NULL;
 
 	void initWindow();
 	void drawWindow();
@@ -28,6 +31,7 @@ private:
 	void drawViewPanel(float x, float y, float w, float h);
 	void updateFrameSizes(float new_width, float new_height);
 	void performSearch();
+	void moveToTaxon(FBTaxon* taxon);
 
 public:
 	FBEditor(string database_path = "");

@@ -149,6 +149,9 @@
   <ItemGroup>
     <Library Include="raylib-5.0_win64_msvc16\lib\raylibdll.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="database.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

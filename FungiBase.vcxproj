@@ -150,6 +150,7 @@
     <Library Include="raylib-5.0_win64_msvc16\lib\raylibdll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="backup.json" />
     <None Include="database.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

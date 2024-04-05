@@ -218,25 +218,25 @@ FBJsonElement makeArrayElement(vector<FBJsonElement> a)
 
 int getIntElement(FBJsonElement e)
 {
-	if (e.type != FBJsonElementType::INT) throw new exception("invalid element type");
+	if (e.type != FBJsonElementType::INT) return 0;
 	return e.int_value;
 }
 
 string getStringElement(FBJsonElement e)
 {
-	if (e.type != FBJsonElementType::STRING) throw new exception("invalid element type");
+	if (e.type != FBJsonElementType::STRING) return "";
 	return e.string_value;
 }
 
 FBJsonObject getObjectElement(FBJsonElement e)
 {
-	if (e.type != FBJsonElementType::OBJECT) throw new exception("invalid element type");
+	if (e.type != FBJsonElementType::OBJECT) return FBJsonObject();
 	return e.object_value;
 }
 
 vector<FBJsonElement> getArrayElement(FBJsonElement e)
 {
-	if (e.type != FBJsonElementType::ARRAY) throw new exception("invalid element type");
+	if (e.type != FBJsonElementType::ARRAY) return vector<FBJsonElement>();
 	return e.array_value;
 }
 
@@ -255,6 +255,8 @@ FBJsonObject serialise(const FBTaxon& taxon)
 		else
 			taxon_object["sub_taxa"].array_value.push_back(makeObjectElement(serialise(*sub_taxon)));
 	}
+	taxon_object["sources"] = FBJsonElement{ FBJsonElementType::ARRAY };
+	for (FBSource h : taxon.sources) taxon_object["sources"].array_value.push_back(makeObjectElement(serialise(h)));
 
 	return taxon_object;
 }
@@ -277,6 +279,13 @@ void deserialise(FBJsonObject& taxon_object, FBTaxon& taxon)
 		}
 		sub_taxon->parent_taxon = &taxon;
 		taxon.sub_taxa.insert(sub_taxon);
+	}
+	for (FBJsonElement source_el : getArrayElement(taxon_object["sources"]))
+	{
+		FBSource s;
+		FBJsonObject obj = getObjectElement(source_el);
+		deserialise(obj, s);
+		taxon.sources.insert(s);
 	}
 }
 
@@ -431,4 +440,24 @@ void deserialise(FBJsonObject& fungus_object, FBFungus& fungus)
 	{
 		fungus.tags.insert((FBTag)getIntElement(el));
 	}
+}
+
+FBJsonObject serialise(const FBSource& source)
+{
+	FBJsonObject source_object;
+
+	source_object["index"] = makeIntElement(source.index);
+	source_object["link"] = makeStringElement(source.link);
+	source_object["description"] = makeStringElement(source.description);
+	source_object["date_accessed"] = makeStringElement(source.date_accessed);
+
+	return source_object;
+}
+
+void deserialise(FBJsonObject& source_object, FBSource& source)
+{
+	source.index = getIntElement(source_object["index"]);
+	source.link = getStringElement(source_object["link"]);
+	source.description = getStringElement(source_object["description"]);
+	source.date_accessed = getStringElement(source_object["date_accessed"]);
 }

@@ -217,7 +217,7 @@ bool FBDatabase::insert(const FBTaxon& new_taxon, FBTaxon* parent)
 		return false;
 	}
 
-	if (child->level == FBTaxonLevel::SPECIES || child->level == FBTaxonLevel::SUBSPECIES)
+	if (isSpecies(child))
 	{
 		delete child;
 		parent->sub_taxa.erase(child);
@@ -239,7 +239,7 @@ bool FBDatabase::remove(FBTaxon* taxon)
 
 	taxon->parent_taxon->sub_taxa.erase(taxon);
 
-	if (taxon->level == FBTaxonLevel::SPECIES || taxon->level == FBTaxonLevel::SUBSPECIES)
+	if (isSpecies(taxon))
 		fungi_index.erase(getBinomialName(*taxon));
 	
 	delete taxon;
@@ -283,7 +283,6 @@ bool FBDatabase::isOpen()
 
 FBDatabase::~FBDatabase()
 {
-	if (is_open && top_level) flush();
 	unloadDatabase();
 	is_open = false;
 }

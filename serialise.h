@@ -69,3 +69,6 @@ void deserialise(FBJsonObject&, FBDistribution&);
 
 FBJsonObject serialise(const FBFungus&);
 void deserialise(FBJsonObject&, FBFungus&);
+
+FBJsonObject serialise(const FBSource&);
+void deserialise(FBJsonObject&, FBSource&);

@@ -21,6 +21,19 @@ enum FBTaxonLevel
 
 string getDescription(FBTaxonLevel);
 
+struct FBSource
+{
+	unsigned int index = 0;
+	string link = "";
+	string description = "";
+	string date_accessed = "";
+};
+
+inline bool operator<(const FBSource& a, const FBSource& b)
+{
+	return a.index < b.index;
+}
+
 struct FBTaxon
 {
 	string name = "Unnamed taxon";
@@ -29,6 +42,8 @@ struct FBTaxon
 
 	set<FBTaxon*> sub_taxa;
 	FBTaxon* parent_taxon = NULL;
+
+	set<FBSource> sources;
 };
 
 struct FBFungus;

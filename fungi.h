@@ -149,3 +149,5 @@ struct FBFungus : public FBTaxon
 
 	set<FBTag> tags;
 };
+
+inline bool isSpecies(FBTaxon* taxon) { return taxon->level == FBTaxonLevel::SPECIES || taxon->level == FBTaxonLevel::SUBSPECIES; }

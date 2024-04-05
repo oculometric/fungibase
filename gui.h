@@ -87,16 +87,23 @@ public:
 	void draw() override;
 };
 
-class FBGuiMessageModal : public FBGuiElement
+class FBGuiInfoModal : public FBGuiElement
 {
 protected:
 	int result = -1;
 public:
 	string title = "title";
 	string message = "message";
-	string options = "";
 
 	int getState();
+
+	void draw() override;
+};
+
+class FBGuiMessageModal : public FBGuiInfoModal
+{
+public:
+	string options = "";
 
 	void draw() override;
 };
@@ -106,9 +113,10 @@ class FBGuiTextModal : public FBGuiMessageModal
 private:
 	char* buffer = NULL;
 public:
-	bool secret_view_active = false;
+	bool secret_view_active = true;
 
 	string getText();
+	void clearBuffer();
 
 	void draw() override;
 

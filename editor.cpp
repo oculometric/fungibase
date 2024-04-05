@@ -39,6 +39,8 @@ void FBEditor::initWindow()
     view_parent_button.icon = GuiIconName::ICON_ARROW_UP;
     view_child_button.text = "child";
     view_child_button.icon = GuiIconName::ICON_ARROW_DOWN;
+    view_add_button.text = "new taxon";
+    view_add_button.icon = GuiIconName::ICON_FOLDER_ADD;
     view_description_label.horizontal_align = GuiTextAlignment::TEXT_ALIGN_RIGHT;
     view_description_label.text = "description:";
     view_description_box.horizontal_align = GuiTextAlignment::TEXT_ALIGN_LEFT;
@@ -64,6 +66,10 @@ void FBEditor::initWindow()
     database_reload_button.text = "reload from disk";
     database_reload_button.icon = GuiIconName::ICON_STEP_OUT;
 
+    modal_m.enabled = false;
+    modal_t.enabled = false;
+    modal_i.enabled = false;
+
     // mainloop
     while (!WindowShouldClose())
     {
@@ -82,7 +88,7 @@ void FBEditor::drawWindow()
 {
     BeginDrawing();
     
-    if (modal_state < 3)
+    if (modal_state < 7)
     {
         ClearBackground(GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
         // search panel
@@ -94,15 +100,42 @@ void FBEditor::drawWindow()
     }
     else
     {
-        int value = GuiMessageBox(Rectangle{ window_rect.width / 4, window_rect.height / 4, window_rect.width / 2, window_rect.height / 2 }, modal_title.c_str(), modal_message.c_str(), modal_options.c_str());
-        if (value >= 0)
+        if (modal_m.enabled)
         {
-            modal_state = -1;
-            (this->*modal_callback)(value);
+            modal_m.rect = Rectangle{ window_rect.width / 4, window_rect.height / 4, window_rect.width / 2, window_rect.height / 2 };
+            modal_m.draw();
+            if (modal_m.getState() >= 0)
+            {
+                modal_state = -1;
+                modal_m.enabled = false;
+                (this->*modal_callback)(modal_m.getState(), "");
+            }
+        }
+        else if (modal_t.enabled)
+        {
+            modal_t.rect = Rectangle{ window_rect.width / 4, window_rect.height / 4, window_rect.width / 2, window_rect.height / 2 };
+            modal_t.secret_view_active = true;
+            modal_t.draw();
+            if (modal_t.getState() >= 0)
+            {
+                modal_state = -1;
+                modal_t.enabled = false;
+                (this->*modal_callback)(modal_t.getState(), modal_t.getText());
+            }
+        }
+        else if (modal_i.enabled)
+        {
+            modal_i.rect = Rectangle{ window_rect.width / 4, window_rect.height / 4, window_rect.width / 2, window_rect.height / 2 };
+            modal_i.draw();
+            if (modal_i.getState() >= 0)
+            {
+                modal_state = -1;
+                modal_i.enabled = false;
+            }
         }
     }
 
-    if (modal_state > 0 && modal_state < 3)
+    if (modal_state > 0 && modal_state < 7)
         modal_state++;
 
     EndDrawing();
@@ -138,7 +171,8 @@ void FBEditor::updateViewPanelFrames(float x, float y, float w, float h)
     view_child_button.rect = Rectangle{ x + w - 96 - BORDER_OFFSET, y_offset + BORDER_OFFSET, 96, 40 };
     y_offset += 40 + BORDER_OFFSET;
     view_child_dropdown.rect = Rectangle{ x + BORDER_OFFSET, y_offset, w - BORDER_OFFSET_2, h - y_offset - BORDER_OFFSET };
-    view_level_label.rect = Rectangle{ x + 8, y_offset, w - 16, TEXT_LABEL_HEIGHT };
+    view_level_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, w - 16, TEXT_LABEL_HEIGHT };
+    view_add_button.rect = Rectangle{ x + w - 120 - BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
     y_offset += TEXT_LABEL_HEIGHT;
     view_description_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
     view_description_box.rect = Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, 240 };
@@ -153,31 +187,64 @@ void FBEditor::updateViewPanelFrames(float x, float y, float w, float h)
 
 void FBEditor::drawViewPanel()
 {
-    view_panel.draw();
-    // view label
-    string taxon_name = "no taxon";
-    if (current_taxon) taxon_name = current_taxon->name;
-    if (current_taxon && isSpecies(current_taxon))
-    {
-        taxon_name = current_taxon->parent_taxon->name + ' ' + taxon_name;
-        if (current_taxon->level == FBTaxonLevel::SUBSPECIES)
-            taxon_name = current_taxon->parent_taxon->parent_taxon->name + ' ' + taxon_name;
-    }
-    view_label.text = "view - " + taxon_name;
-    view_label.draw();
-    
     view_parent_button.enabled = current_taxon && current_taxon->parent_taxon;
     view_child_button.enabled = current_taxon && current_taxon->sub_taxa.size() > 0;
+    if (current_taxon && current_taxon->sub_taxa.empty()) is_viewing_child_taxa = false;
+
+    view_panel.draw();
+    view_label.draw();
     view_parent_button.draw();
     view_child_button.draw();
+    
+    if (current_taxon)
+    {
+        if (is_viewing_child_taxa)
+            view_child_dropdown.draw();
+        else
+        {
+            view_level_label.draw();
+            view_description_label.draw();
+            view_description_box.draw();
+            if (current_taxon->level != FBTaxonLevel::SUBSPECIES) view_add_button.draw();
+
+            if (isSpecies(current_taxon))
+            {
+                FBFungus* current_fungus = (FBFungus*)current_taxon;
+
+                view_feeding_label.draw();
+                view_feeding_label_2.draw();
+
+                view_tags_label.draw();
+                view_tags_label_2.draw();
+            }
+        }
+    }
+
+    if (!current_taxon) return;
+
+    if (current_taxon->level != FBTaxonLevel::SUBSPECIES && view_add_button.wasPressed() && !is_viewing_child_taxa)
+    {
+        bool may_skip = current_taxon->level == FBTaxonLevel::PHYLUM || current_taxon->level == FBTaxonLevel::CLASS;
+        triggerTextModal("CREATE TAXON", "creating a new " + getDescription((FBTaxonLevel)(current_taxon->level + 1)) + " as a child of " + current_taxon->name, may_skip ? "cancel;confirm;skip to lower level" : "cancel;confirm", &FBEditor::newTaxonCallback);
+    }
+    if (is_viewing_child_taxa)
+    {
+        if (view_child_dropdown.getState() >= 0 && view_child_dropdown.getState() < current_taxon->sub_taxa.size())
+        {
+            is_viewing_child_taxa = false;
+            auto child = current_taxon->sub_taxa.begin();
+            for (int i = 0; i < view_child_dropdown.getState(); i++) child++;
+            moveToTaxon(*(child));
+        }
+    }
     // jump to parent taxon
-    if (current_taxon && current_taxon->parent_taxon && view_parent_button.wasPressed())
+    if (current_taxon->parent_taxon && view_parent_button.wasPressed())
     {
         moveToTaxon(current_taxon->parent_taxon);
         is_viewing_child_taxa = false;
     }
     // jump to child taxon
-    if (current_taxon && current_taxon->sub_taxa.size() > 0 && view_child_button.wasPressed())
+    if (current_taxon->sub_taxa.size() > 0 && view_child_button.wasPressed())
     {
         is_viewing_child_taxa = !is_viewing_child_taxa;
         if (is_viewing_child_taxa)
@@ -185,7 +252,7 @@ void FBEditor::drawViewPanel()
             string child_taxa = "";
             for (FBTaxon* child : current_taxon->sub_taxa)
             {
-                if (child->level == FBTaxonLevel::SUBSPECIES)
+                if (child->level == FBTaxonLevel::SUBSPECIES && current_taxon->parent_taxon)
                 {
                     child_taxa += current_taxon->parent_taxon->name + " ";
                 }
@@ -200,51 +267,9 @@ void FBEditor::drawViewPanel()
             view_child_dropdown.reset();
         }
     }
-
-    if (!current_taxon) return;
     
-    // child taxon selection
-    if (is_viewing_child_taxa)
-    {
-        if (current_taxon->sub_taxa.empty())
-        {
-            is_viewing_child_taxa = false;
-            return;
-        }
-        
-        view_child_dropdown.draw();
-        if (view_child_dropdown.getState() >= 0 && view_child_dropdown.getState() < current_taxon->sub_taxa.size())
-        {
-            is_viewing_child_taxa = false;
-            auto child = current_taxon->sub_taxa.begin();
-            for (int i = 0; i < view_child_dropdown.getState(); i++) child++;
-            moveToTaxon(*(child));
-        }
-        return;
-    }
-    
-
-    // taxon level label
-    view_level_label.draw();
-    
-    // description box
-    view_description_label.draw();
-    view_description_box.draw();
-    
-    if (!isSpecies(current_taxon)) return;
-    FBFungus* current_fungus = (FBFungus*)current_taxon;
-    
-    // feeding type
-    view_feeding_label.draw();
-    view_feeding_label_2.draw();
-    
-    // tags list
-    view_tags_label.draw();
-    view_tags_label_2.draw();
-
     // TODO: other fungus info
     // TODO: access to child taxa
-
 }
 
 void FBEditor::updateDatabasePanelFrames(float x, float y, float w, float h)
@@ -294,15 +319,15 @@ void FBEditor::drawDatabasePanel()
 
     // save/load buttons
     if (database_overwrite_button.wasPressed())
-        triggerModal("WARNING", "this operation will overwrite the copy of \nthe database stored on disk \nwith the version in memory. \nproceed?", "no;yes", &FBEditor::flushDatabaseCallback);
+        triggerMessageModal("WARNING", "this operation will overwrite the copy of \nthe database stored on disk \nwith the version in memory. \nproceed?", "no;yes", &FBEditor::flushDatabaseCallback);
     if (database_reload_button.wasPressed())
-        triggerModal("WARNING", "this operation will overwrite the copy of \nthe database stored in memory with the\n version from the disk. \nunsaved modifications will be lost! \nproceed?", "no;yes", &FBEditor::reloadDatabaseCallback);
+        triggerMessageModal("WARNING", "this operation will overwrite the copy of \nthe database stored in memory with the\n version from the disk. \nunsaved modifications will be lost! \nproceed?", "no;yes", &FBEditor::reloadDatabaseCallback);
     
     // load/unload button
     if (database_load_button.wasPressed())
     {
         if (database_currently_loaded)
-            triggerModal("WARNING", "this operation will unload the database from memory.\nunsaved changes will be lost!\nproceed?", "no;yes", &FBEditor::unloadDatabaseCallback);
+            triggerMessageModal("WARNING", "this operation will unload the database from memory.\nunsaved changes will be lost!\nproceed?", "no;yes", &FBEditor::unloadDatabaseCallback);
         else
         {
             if (database != NULL)
@@ -325,7 +350,7 @@ void FBEditor::drawDatabasePanel()
     }
 }
 
-void FBEditor::unloadDatabaseCallback(int option)
+void FBEditor::unloadDatabaseCallback(int option, string _)
 {
     if (option == 1) { }    // no
     else if (option == 2)   // yes
@@ -333,11 +358,11 @@ void FBEditor::unloadDatabaseCallback(int option)
         is_viewing_child_taxa = false;
         delete database;
         database = NULL;
-        current_taxon = NULL;
+        moveToTaxon(NULL);
     }
 }
 
-void FBEditor::reloadDatabaseCallback(int option)
+void FBEditor::reloadDatabaseCallback(int option, string _)
 {
     if (option == 1) { }    // no
     else if (option == 2)   // yes
@@ -350,13 +375,52 @@ void FBEditor::reloadDatabaseCallback(int option)
     }
 }
 
-void FBEditor::flushDatabaseCallback(int option)
+void FBEditor::flushDatabaseCallback(int option, string _)
 {
     if (option == 1) {}    // no
     else if (option == 2)   // yes
     {
         if (!database) return;
         database->flush();
+    }
+}
+
+void FBEditor::newTaxonCallback(int option, string name)
+{
+    if (option == 1) {} // cancel
+    else if (option == 2) // confirm
+    {
+        if (name.empty()) return;
+        if (!database || !database->isOpen() || !current_taxon) { triggerInfoModal("ERROR", "unable to create new taxon.\n database state is invalid!"); return; }
+        if (database->insert(FBTaxon{ name, (FBTaxonLevel)(current_taxon->level + 1), "this taxon lacks a description" }, current_taxon))
+        {
+        }
+        else
+        {
+            triggerInfoModal("ERROR", "        unable to create new taxon.        \n there may have been a naming collision.");
+        }
+    }
+    else if (option == 3) // one step further down
+    {
+        triggerTextModal("CREATE TAXON", "creating a new " + getDescription((FBTaxonLevel)(current_taxon->level + 2)) + " as a child of " + current_taxon->name, "cancel;confirm", &FBEditor::newTaxonCallbackDeeper);
+    }
+}
+
+void FBEditor::newTaxonCallbackDeeper(int option, string name)
+{
+    if (option == 1) {} // cancel
+    else if (option == 2) // confirm
+    {
+        if (name.empty()) return;
+        if (!database || !database->isOpen() || !current_taxon) { triggerInfoModal("ERROR", "unable to create new taxon.\n database state is invalid!"); return; }
+        if (database->insert(FBTaxon{ name, (FBTaxonLevel)(current_taxon->level + 2), "this taxon lacks a description" }, current_taxon))
+        {
+
+        }
+        else
+        {
+            triggerInfoModal("ERROR", "        unable to create new taxon.        \n there may have been a naming collision.");
+        }
     }
 }
 
@@ -386,7 +450,20 @@ void FBEditor::moveToTaxon(FBTaxon* taxon)
 {
     current_taxon = taxon;
     if (!current_taxon)
+    {
+        view_label.text = "no taxon";
         return;
+    }
+
+    string taxon_name = "no taxon";
+    if (current_taxon) taxon_name = current_taxon->name;
+    if (current_taxon && isSpecies(current_taxon))
+    {
+        taxon_name = current_taxon->parent_taxon->name + ' ' + taxon_name;
+        if (current_taxon->level == FBTaxonLevel::SUBSPECIES)
+            taxon_name = current_taxon->parent_taxon->parent_taxon->name + ' ' + taxon_name;
+    }
+    view_label.text = "view - " + taxon_name;
 
     view_level_label.text = "(" + getDescription(current_taxon->level) + ")";
     view_description_box.setText(taxon->description.c_str());
@@ -414,12 +491,37 @@ FBEditor::FBEditor(string database_path)
 	initWindow();
 }
 
-void FBEditor::triggerModal(string title, string message, string options, void (FBEditor::* callback)(int))
+void FBEditor::triggerMessageModal(string title, string message, string options, void (FBEditor::* callback)(int, string))
 {
-    modal_title = title;
-    modal_message = message;
-    modal_options = options;
+    if (modal_m.enabled || modal_t.enabled || modal_i.enabled) return;
+    modal_m.title = title;
+    modal_m.message = message;
+    modal_m.options = options;
+    modal_m.enabled = true;
     modal_callback = callback;
+
+    modal_state = 1;
+}
+
+void FBEditor::triggerTextModal(string title, string message, string options, void (FBEditor::* callback)(int, string))
+{
+    if (modal_m.enabled || modal_t.enabled || modal_i.enabled) return;
+    modal_t.title = title;
+    modal_t.message = message;
+    modal_t.options = options;
+    modal_t.enabled = true;
+    modal_t.clearBuffer();
+    modal_callback = callback;
+
+    modal_state = 1;
+}
+
+void FBEditor::triggerInfoModal(string title, string message)
+{
+    if (modal_m.enabled || modal_t.enabled || modal_i.enabled) return;
+    modal_i.title = title;
+    modal_i.message = message;
+    modal_i.enabled = true;
 
     modal_state = 1;
 }

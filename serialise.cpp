@@ -176,7 +176,6 @@ FBJsonObject objectifyJsonInner(const string& str)
 
 FBJsonObject objectifyJson(const string& str)
 {
-	//if (!checkJsonIntegrity(str)) return FBJsonObject();
 	return objectifyJsonInner(removeNonEnclosedWhitespace(str));
 }
 

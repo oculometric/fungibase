@@ -25,6 +25,7 @@ private:
 	FBGuiLabel view_label;
 	FBGuiButton view_parent_button;
 	FBGuiButton view_child_button;
+	FBGuiButton view_add_button;
 	FBGuiListView view_child_dropdown;
 	FBGuiLabel view_level_label;
 	FBGuiLabel view_description_label;
@@ -50,10 +51,10 @@ private:
 	bool is_viewing_child_taxa = false;
 	
 	int modal_state = -1;
-	string modal_title;
-	string modal_message;
-	string modal_options;
-	void (FBEditor::* modal_callback)(int);
+	FBGuiTextModal modal_t;
+	FBGuiMessageModal modal_m;
+	FBGuiInfoModal modal_i;
+	void (FBEditor::* modal_callback)(int, string);
 
 	void initWindow();
 	void drawWindow();
@@ -70,11 +71,16 @@ private:
 	void updateFrameSizes(float new_width, float new_height);
 	void performSearch();
 	void moveToTaxon(FBTaxon* taxon);
-	void triggerModal(string title, string message, string options, void (FBEditor::* callback)(int));
 
-	void unloadDatabaseCallback(int option);
-	void flushDatabaseCallback(int option);
-	void reloadDatabaseCallback(int option);
+	void triggerMessageModal(string title, string message, string options, void (FBEditor::* callback)(int, string));
+	void triggerTextModal(string title, string message, string options, void (FBEditor::* callback)(int, string));
+	void triggerInfoModal(string title, string message);
+
+	void unloadDatabaseCallback(int option, string _);
+	void flushDatabaseCallback(int option, string _);
+	void reloadDatabaseCallback(int option, string _);
+	void newTaxonCallback(int option, string name);
+	void newTaxonCallbackDeeper(int option, string name);
 
 public:
 	FBEditor(string database_path = "");

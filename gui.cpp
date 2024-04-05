@@ -86,6 +86,7 @@ int FBGuiListView::getState()
 void FBGuiListView::reset()
 {
     active_index = -1;
+    result = -1;
     scroll_index = 0;
 }
 
@@ -95,21 +96,23 @@ void FBGuiListView::draw()
     else GuiDisable();
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, GuiTextAlignment::TEXT_ALIGN_CENTER);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, GuiTextAlignmentVertical::TEXT_ALIGN_MIDDLE);
-
+    bool clicked = GuiButton(rect, "");
     GuiListView(rect, options.c_str(), &scroll_index, &active_index);
-    result = active_index;
+    result = clicked ? active_index : -1;
 }
 
-int FBGuiMessageModal::getState()
+int FBGuiInfoModal::getState()
 {
     return result;
 }
 
+void FBGuiInfoModal::draw()
+{
+    result = GuiMessageBox(rect, title.c_str(), message.c_str(), "ok");
+}
+
 void FBGuiMessageModal::draw()
 {
-    if (enabled) GuiEnable();
-    else GuiDisable();
-
     result = GuiMessageBox(rect, title.c_str(), message.c_str(), options.c_str());
 }
 
@@ -118,11 +121,17 @@ string FBGuiTextModal::getText()
     return string(buffer);
 }
 
+void FBGuiTextModal::clearBuffer()
+{
+    memset(buffer, '\0', TEXTBOX_BUFFER_LENGTH);
+}
+
 void FBGuiTextModal::draw()
 {
     if (enabled) GuiEnable();
     else GuiDisable();
 
+    GuiSetStyle(GuiControl::TEXTBOX, GuiTextBoxProperty::TEXT_READONLY, false);
     result = GuiTextInputBox(rect, title.c_str(), message.c_str(), options.c_str(), buffer, TEXTBOX_BUFFER_LENGTH, &secret_view_active);
 }
 

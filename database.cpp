@@ -205,6 +205,10 @@ bool FBDatabase::insert(const FBTaxon& new_taxon, FBTaxon* parent)
 	if (!checkIsInHeirarchy(parent)) return false;
 	if (new_taxon.level <= parent->level) return false;
 	
+	string proper_name = isSpecies(&new_taxon) ? lowercase(new_taxon.name) : firstUppercaseOnly(new_taxon.name);
+	for (FBTaxon* sub : parent->sub_taxa)
+		if (sub->name == proper_name) return false;
+
 	FBTaxon* child = new FBTaxon(new_taxon);
 	parent->sub_taxa.insert(child);
 	child->parent_taxon = parent;
@@ -228,6 +232,8 @@ bool FBDatabase::insert(const FBTaxon& new_taxon, FBTaxon* parent)
 
 		fungi_index.emplace(getBinomialName(*child), (FBFungus*)child);
 	}
+	
+	child->name = proper_name;
 
 	return true;
 }

@@ -136,12 +136,14 @@
     <ClCompile Include="descriptions.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="FungiBase.cpp" />
+    <ClCompile Include="gui.cpp" />
     <ClCompile Include="serialise.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h" />
     <ClInclude Include="editor.h" />
     <ClInclude Include="fungi.h" />
+    <ClInclude Include="gui.h" />
     <ClInclude Include="serialise.h" />
     <ClInclude Include="styling.h" />
     <ClInclude Include="taxonomy.h" />

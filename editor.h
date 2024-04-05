@@ -21,6 +21,18 @@ private:
 	FBGuiButton search_button;
 
 	Rectangle view_panel_rect;
+	FBGuiPanel view_panel;
+	FBGuiLabel view_label;
+	FBGuiButton view_parent_button;
+	FBGuiButton view_child_button;
+	FBGuiListView view_child_dropdown;
+	FBGuiLabel view_level_label;
+	FBGuiLabel view_description_label;
+	FBGuiTextBox view_description_box;
+	FBGuiLabel view_feeding_label;
+	FBGuiLabel view_feeding_label_2;
+	FBGuiLabel view_tags_label;
+	FBGuiLabel view_tags_label_2;
 
 	Rectangle database_panel_rect;
 	FBGuiPanel database_panel;
@@ -32,14 +44,9 @@ private:
 	FBGuiButton database_reload_button;
 	FBGuiButton database_load_button;
 
-
-	float view_panel_width = 0;
-	float view_panel_height = 0;
-
 	FBDatabase* database = NULL;
 
 	FBTaxon* current_taxon = NULL;
-	char* description_text = NULL;
 	bool is_viewing_child_taxa = false;
 	
 	int modal_state = -1;
@@ -54,12 +61,13 @@ private:
 	void updateSearchPanelFrames(float x, float y, float w, float h);
 	void drawSearchPanel();
 
-	void drawViewPanel(float x, float y, float w, float h);
+	void updateViewPanelFrames(float x, float y, float w, float h);
+	void drawViewPanel();
 	
 	void updateDatabasePanelFrames(float x, float y, float w, float h);
 	void drawDatabasePanel();
 
-	void updateFrameSizes(float new_width, float new_height); // TODO: update all UI element sizes here too
+	void updateFrameSizes(float new_width, float new_height);
 	void performSearch();
 	void moveToTaxon(FBTaxon* taxon);
 	void triggerModal(string title, string message, string options, void (FBEditor::* callback)(int));

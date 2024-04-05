@@ -32,8 +32,26 @@ void FBEditor::initWindow()
     search_button.icon = GuiIconName::ICON_LENS;
 
     // view panel setup
+    view_panel.border = GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL));
+    view_panel.background = GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR));
+    view_label.icon = GuiIconName::ICON_TEXT_NOTES;
+    view_parent_button.text = "parent";
+    view_parent_button.icon = GuiIconName::ICON_ARROW_UP;
+    view_child_button.text = "child";
+    view_child_button.icon = GuiIconName::ICON_ARROW_DOWN;
+    view_description_label.horizontal_align = GuiTextAlignment::TEXT_ALIGN_RIGHT;
+    view_description_label.text = "description:";
+    view_description_box.horizontal_align = GuiTextAlignment::TEXT_ALIGN_LEFT;
+    view_description_box.vertical_align = GuiTextAlignmentVertical::TEXT_ALIGN_TOP;
+    view_description_box.editable = false;
+    view_feeding_label.horizontal_align = GuiTextAlignment::TEXT_ALIGN_RIGHT;
+    view_feeding_label.text = "feeding:";
+    view_feeding_label_2.horizontal_align = GuiTextAlignment::TEXT_ALIGN_LEFT;
+    view_tags_label.horizontal_align = GuiTextAlignment::TEXT_ALIGN_RIGHT;
+    view_tags_label.text = "tags:";
+    view_tags_label_2.horizontal_align = GuiTextAlignment::TEXT_ALIGN_LEFT;
 
-    // dataase panel setup
+    // database panel setup
     database_panel.border = GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL));
     database_panel.background = GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR));
     database_label.text = "database";
@@ -70,7 +88,7 @@ void FBEditor::drawWindow()
         // search panel
         drawSearchPanel();
         // view panel
-        drawViewPanel(search_panel_rect.width, 0, view_panel_width, view_panel_height);
+        drawViewPanel();
         // database panel
         drawDatabasePanel();
     }
@@ -111,35 +129,80 @@ void FBEditor::drawSearchPanel()
     // TODO: rest of the search panel
 }
 
-void FBEditor::drawViewPanel(float x, float y, float w, float h)
+void FBEditor::updateViewPanelFrames(float x, float y, float w, float h)
 {
-    //GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
-    // view label
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+    view_panel.rect = Rectangle{ x, y, w, h };
     float y_offset = y;
+    view_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 };
+    view_parent_button.rect = Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, 96, 40 };
+    view_child_button.rect = Rectangle{ x + w - 96 - BORDER_OFFSET, y_offset + BORDER_OFFSET, 96, 40 };
+    y_offset += 40 + BORDER_OFFSET;
+    view_child_dropdown.rect = Rectangle{ x + BORDER_OFFSET, y_offset, w - BORDER_OFFSET_2, h - y_offset - BORDER_OFFSET };
+    view_level_label.rect = Rectangle{ x + 8, y_offset, w - 16, TEXT_LABEL_HEIGHT };
+    y_offset += TEXT_LABEL_HEIGHT;
+    view_description_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
+    view_description_box.rect = Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, 240 };
+    y_offset += 240;
+    view_feeding_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
+    view_feeding_label_2.rect = Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, TEXT_LABEL_HEIGHT };
+    y_offset += TEXT_LABEL_HEIGHT;
+    view_tags_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
+    view_tags_label_2.rect = Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, TEXT_LABEL_HEIGHT };
+    y_offset += TEXT_LABEL_HEIGHT;
+}
+
+void FBEditor::drawViewPanel()
+{
+    view_panel.draw();
+    // view label
     string taxon_name = "no taxon";
     if (current_taxon) taxon_name = current_taxon->name;
     if (current_taxon && isSpecies(current_taxon))
     {
         taxon_name = current_taxon->parent_taxon->name + ' ' + taxon_name;
+        if (current_taxon->level == FBTaxonLevel::SUBSPECIES)
+            taxon_name = current_taxon->parent_taxon->parent_taxon->name + ' ' + taxon_name;
     }
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 }, (string("#176# view - ") + taxon_name).c_str());
+    view_label.text = "view - " + taxon_name;
+    view_label.draw();
+    
+    view_parent_button.enabled = current_taxon && current_taxon->parent_taxon;
+    view_child_button.enabled = current_taxon && current_taxon->sub_taxa.size() > 0;
+    view_parent_button.draw();
+    view_child_button.draw();
     // jump to parent taxon
-    if (current_taxon && current_taxon->parent_taxon && GuiButton(Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, 96, 40 }, "#117#parent"))
+    if (current_taxon && current_taxon->parent_taxon && view_parent_button.wasPressed())
     {
         moveToTaxon(current_taxon->parent_taxon);
         is_viewing_child_taxa = false;
     }
     // jump to child taxon
-    if (current_taxon && current_taxon->sub_taxa.size() > 0 && GuiButton(Rectangle{ x + w - 96 - BORDER_OFFSET, y_offset + BORDER_OFFSET, 96, 40 }, "#116#child"))
+    if (current_taxon && current_taxon->sub_taxa.size() > 0 && view_child_button.wasPressed())
     {
         is_viewing_child_taxa = !is_viewing_child_taxa;
+        if (is_viewing_child_taxa)
+        {
+            string child_taxa = "";
+            for (FBTaxon* child : current_taxon->sub_taxa)
+            {
+                if (child->level == FBTaxonLevel::SUBSPECIES)
+                {
+                    child_taxa += current_taxon->parent_taxon->name + " ";
+                }
+                if (isSpecies(child))
+                {
+                    child_taxa += current_taxon->name + " ";
+                }
+                child_taxa += child->name + ";";
+            }
+            child_taxa.pop_back();
+            view_child_dropdown.options = child_taxa;
+            view_child_dropdown.reset();
+        }
     }
-    y_offset += 40 + BORDER_OFFSET;
 
     if (!current_taxon) return;
-
+    
     // child taxon selection
     if (is_viewing_child_taxa)
     {
@@ -148,69 +211,39 @@ void FBEditor::drawViewPanel(float x, float y, float w, float h)
             is_viewing_child_taxa = false;
             return;
         }
-        int item = -1;
-        int scroll = 0;
-        string child_taxa = "";
-        for (FBTaxon* child : current_taxon->sub_taxa)
-        {
-            if (child->level == FBTaxonLevel::SUBSPECIES)
-            {
-                child_taxa += current_taxon->parent_taxon->name + " ";
-            }
-            if (isSpecies(child))
-            {
-                child_taxa += current_taxon->name + " ";
-            }
-            child_taxa += child->name + ";";
-        }
-        child_taxa.pop_back();
-        GuiListView(Rectangle{ x + BORDER_OFFSET, y_offset, w - BORDER_OFFSET_2, h - y_offset - BORDER_OFFSET }, child_taxa.c_str(), &scroll, &item);
-        if (item >= 0 && item < current_taxon->sub_taxa.size())
+        
+        view_child_dropdown.draw();
+        if (view_child_dropdown.getState() >= 0 && view_child_dropdown.getState() < current_taxon->sub_taxa.size())
         {
             is_viewing_child_taxa = false;
             auto child = current_taxon->sub_taxa.begin();
-            for (int i = 0; i < item; i++) child++;
+            for (int i = 0; i < view_child_dropdown.getState(); i++) child++;
             moveToTaxon(*(child));
         }
         return;
     }
-
+    
 
     // taxon level label
-    GuiLabel(Rectangle{ x + 8, y_offset, w - 16, TEXT_LABEL_HEIGHT }, (string("(") + getDescription(current_taxon->level) + string(")")).c_str());
-    y_offset += TEXT_LABEL_HEIGHT;
-
+    view_level_label.draw();
+    
     // description box
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT }, "description:");
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiTextBox(Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, 240 }, description_text, 4096, false);
-    y_offset += 240;
-
+    view_description_label.draw();
+    view_description_box.draw();
+    
     if (!isSpecies(current_taxon)) return;
     FBFungus* current_fungus = (FBFungus*)current_taxon;
-
+    
     // feeding type
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT }, "feeding:");
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, TEXT_LABEL_HEIGHT }, getDescription(current_fungus->feeding_type).c_str());
-    y_offset += TEXT_LABEL_HEIGHT;
-
+    view_feeding_label.draw();
+    view_feeding_label_2.draw();
+    
     // tags list
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT }, "tags:");
-    string tags_string = "";
-    for (FBTag tag : current_fungus->tags)
-        tags_string += getDescription(tag) + "; ";
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120, TEXT_LABEL_HEIGHT }, tags_string.c_str());
-    y_offset += TEXT_LABEL_HEIGHT;
+    view_tags_label.draw();
+    view_tags_label_2.draw();
 
     // TODO: other fungus info
     // TODO: access to child taxa
-
 
 }
 
@@ -235,7 +268,7 @@ void FBEditor::drawDatabasePanel()
 {
     // update values
     bool database_currently_loaded = database && database->isOpen();
-    database_file_box.enabled = !database_currently_loaded;
+    database_file_box.editable = !database_currently_loaded;
     database_file_button.enabled = !database_currently_loaded;
     database_overwrite_button.enabled = database_currently_loaded;
     database_reload_button.enabled = database_currently_loaded;
@@ -334,8 +367,8 @@ void FBEditor::updateFrameSizes(float new_width, float new_height)
     search_panel_rect = Rectangle{ 0, 0, 480, window_rect.height - 240 };
     updateSearchPanelFrames(search_panel_rect.x, search_panel_rect.y, search_panel_rect.width, search_panel_rect.height);
 
-    view_panel_width = window_rect.width - search_panel_rect.width;
-    view_panel_height = window_rect.height;
+    view_panel_rect = Rectangle{ search_panel_rect.width, 0, window_rect.width - search_panel_rect.width, window_rect.height };
+    updateViewPanelFrames(view_panel_rect.x, view_panel_rect.y, view_panel_rect.width, view_panel_rect.height);
 
     database_panel_rect = Rectangle{ 0, search_panel_rect.height, search_panel_rect.width, window_rect.height - search_panel_rect.height };
     updateDatabasePanelFrames(database_panel_rect.x, database_panel_rect.y, database_panel_rect.width, database_panel_rect.height);
@@ -352,10 +385,21 @@ void FBEditor::performSearch()
 void FBEditor::moveToTaxon(FBTaxon* taxon)
 {
     current_taxon = taxon;
-    if (!current_taxon) return;
-    if (!description_text) description_text = new char[4096] {'\0'};
-    memset(description_text, '\0', 4096);
-    memcpy(description_text, (void*)(current_taxon->description.c_str()), current_taxon->description.length());
+    if (!current_taxon)
+        return;
+
+    view_level_label.text = "(" + getDescription(current_taxon->level) + ")";
+    view_description_box.setText(taxon->description.c_str());
+
+    if (!isSpecies(current_taxon)) return;
+    FBFungus* current_fungus = (FBFungus*)current_taxon;
+
+    view_feeding_label_2.text = getDescription(current_fungus->feeding_type);
+
+    string tags_string = "";
+    for (FBTag tag : current_fungus->tags)
+        tags_string += getDescription(tag) + "; ";
+    view_tags_label_2.text = tags_string;
 }
 
 FBEditor::FBEditor(string database_path)

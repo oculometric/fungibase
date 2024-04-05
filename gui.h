@@ -59,6 +59,7 @@ private:
 public:
 	GuiTextAlignment horizontal_align = GuiTextAlignment::TEXT_ALIGN_CENTER;
 	GuiTextAlignmentVertical vertical_align = GuiTextAlignmentVertical::TEXT_ALIGN_MIDDLE;
+	bool editable = true;
 
 	bool wasFocusLost();
 	void setText(const char* str);
@@ -81,6 +82,7 @@ public:
 	string options = "";
 
 	int getState();
+	void reset();
 
 	void draw() override;
 };

@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include <iostream>
+
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
@@ -12,7 +14,7 @@ void FBGuiLabel::draw()
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, horizontal_align);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, vertical_align);
 
-    GuiLabel(rect, ("#" + to_string(icon) + "#" + text).c_str());
+    GuiLabel(rect, ((icon > 0 ? ("#" + to_string(icon) + "#") : "") + text).c_str());
 }
 
 bool FBGuiButton::wasPressed()
@@ -27,7 +29,7 @@ void FBGuiButton::draw()
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, horizontal_align);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, vertical_align);
 
-    pressed = GuiButton(rect, ("#" + to_string(icon) + "#" + text).c_str());
+    pressed = GuiButton(rect, ((icon > 0 ? ("#" + to_string(icon) + "#") : "") + text).c_str());
 }
 
 bool FBGuiTextBox::wasFocusLost()
@@ -51,6 +53,7 @@ void FBGuiTextBox::draw()
     if (enabled) GuiEnable();
     else GuiDisable();
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, horizontal_align);
+    GuiSetStyle(GuiControl::TEXTBOX, GuiTextBoxProperty::TEXT_READONLY, !editable);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, vertical_align);
 
     focus_lost = false;
@@ -80,6 +83,12 @@ int FBGuiListView::getState()
     return result;
 }
 
+void FBGuiListView::reset()
+{
+    active_index = -1;
+    scroll_index = 0;
+}
+
 void FBGuiListView::draw()
 {
     if (enabled) GuiEnable();
@@ -87,7 +96,8 @@ void FBGuiListView::draw()
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, GuiTextAlignment::TEXT_ALIGN_CENTER);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, GuiTextAlignmentVertical::TEXT_ALIGN_MIDDLE);
 
-    result = GuiListView(rect, options.c_str(), &scroll_index, &active_index) ? active_index : -1;
+    GuiListView(rect, options.c_str(), &scroll_index, &active_index);
+    result = active_index;
 }
 
 int FBGuiMessageModal::getState()

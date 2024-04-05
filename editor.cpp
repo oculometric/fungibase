@@ -4,7 +4,6 @@
 
 #include "styling.h"
 #include "fungi.h"
-#define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
 #define TEXT_LABEL_HEIGHT 24
@@ -15,16 +14,24 @@ void FBEditor::initWindow()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(30);
-    InitWindow(window_width, window_height, "fungibase");
+    InitWindow(window_rect.width, window_rect.height, "fungibase");
     
     for (int i = 0; i < STYLE_PROPS_COUNT; i++)
         GuiSetStyle(styleProperties[i].controlId, styleProperties[i].propertyId, styleProperties[i].propertyValue);
 
-    window_width = GetMonitorWidth(0) / 2;
-    window_height = GetMonitorHeight(0) / 2;
-    SetWindowSize(window_width, window_height);
-    SetWindowPosition(window_width / 2, window_height / 2);
+    window_rect.width = GetMonitorWidth(0) / 2;
+    window_rect.height = GetMonitorHeight(0) / 2;
+    SetWindowSize(window_rect.width, window_rect.height);
+    SetWindowPosition(window_rect.width / 2, window_rect.height / 2);
 
+    // search panel setup
+    search_panel.border = GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL));
+    search_panel.background = GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR));
+    search_label.text = "search";
+    search_label.icon = GuiIconName::ICON_LENS_BIG;
+    search_button.icon = GuiIconName::ICON_LENS;
+
+    // mainloop
     while (!WindowShouldClose())
     {
         if (IsWindowResized())
@@ -46,15 +53,15 @@ void FBEditor::drawWindow()
     {
         ClearBackground(GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
         // search panel
-        drawSearchPanel(0, 0, search_panel_width, search_panel_height);
+        drawSearchPanel();
         // view panel
-        drawViewPanel(search_panel_width, 0, view_panel_width, view_panel_height);
+        drawViewPanel(search_panel_rect.width, 0, view_panel_width, view_panel_height);
         // database panel
-        drawDatabasePanel(0, search_panel_height, database_panel_width, database_panel_height);
+        drawDatabasePanel(0, search_panel_rect.height, database_panel_width, database_panel_height);
     }
     else
     {
-        int value = GuiMessageBox(Rectangle{ window_width / 4, window_height / 4, window_width / 2, window_height / 2 }, modal_title.c_str(), modal_message.c_str(), modal_options.c_str());
+        int value = GuiMessageBox(Rectangle{ window_rect.width / 4, window_rect.height / 4, window_rect.width / 2, window_rect.height / 2 }, modal_title.c_str(), modal_message.c_str(), modal_options.c_str());
         if (value >= 0)
         {
             modal_state = -1;
@@ -68,29 +75,30 @@ void FBEditor::drawWindow()
     EndDrawing();
 }
 
-void FBEditor::drawSearchPanel(float x, float y, float w, float h)
+void FBEditor::updateSearchPanelFrames(float x, float y, float w, float h)
 {
-    GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
-    if (GuiButton(Rectangle{ x + 8, y + 100, 100, 100 }, "#30#button"))
-        cout << "button!" << endl;
+    search_panel.rect = Rectangle{ x, y, w, h };
+    search_label.rect = Rectangle{ x + BORDER_OFFSET, y + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 };
+    search_box.rect = Rectangle{ x + BORDER_OFFSET, y + BORDER_OFFSET + 40, w - BORDER_OFFSET_2 - 40, 40 };
+    search_button.rect = Rectangle{ x + w - BORDER_OFFSET - 40, y + BORDER_OFFSET + 40, 40, 40 };
+}
 
-    // search label
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 }, "#43#search");
+void FBEditor::drawSearchPanel()
+{
+    search_panel.draw();
 
-    bool search_pressed = GuiButton(Rectangle{ x + w - BORDER_OFFSET - 40, y + BORDER_OFFSET + 40, 40, 40 }, "#42#");
-    bool search_box_interacted = GuiTextBox(Rectangle{ x + BORDER_OFFSET, y + BORDER_OFFSET + 40, w - BORDER_OFFSET_2 - 40, 40 }, search_text, 256, search_box_focussed);
-    if (search_box_interacted && !search_box_focussed) search_box_focussed = true;
-    else if (search_box_interacted && search_box_focussed) { search_pressed = true; search_box_focussed = false; }
-    if (search_pressed) performSearch();
+    search_label.draw();
+    search_box.draw();
+    search_button.draw();
+
+    if (search_button.wasPressed() || search_box.wasFocusLost()) performSearch();
 
     // TODO: rest of the search panel
 }
 
 void FBEditor::drawViewPanel(float x, float y, float w, float h)
 {
-    GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
+    //GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
     // view label
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
@@ -193,7 +201,7 @@ void FBEditor::drawViewPanel(float x, float y, float w, float h)
 
 void FBEditor::drawDatabasePanel(float x, float y, float w, float h)
 {
-    GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
+    //GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
     // database label
     GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
     GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
@@ -291,19 +299,18 @@ void FBEditor::flushDatabaseCallback(int option)
 
 void FBEditor::updateFrameSizes(float new_width, float new_height)
 {
-    window_width = new_width;
-    window_height = new_height;
+    window_rect = Rectangle{ 0,0, new_width, new_height };
 
-    search_panel_width = 480;
-    search_panel_height = window_height - 240;
+    search_panel_rect = Rectangle{ 0, 0, 480, window_rect.height - 240 };
+    updateSearchPanelFrames(search_panel_rect.x, search_panel_rect.y, search_panel_rect.width, search_panel_rect.height);
 
-    view_panel_width = window_width - search_panel_width;
-    view_panel_height = window_height;
+    view_panel_width = window_rect.width - search_panel_rect.width;
+    view_panel_height = window_rect.height;
 
-    database_panel_width = search_panel_width;
+    database_panel_width = search_panel_rect.width;
     database_panel_height = 240;
 
-    cout << "new window size: " << window_width << " " << window_height << endl;
+    cout << "new window size: " << window_rect.width << " " << window_rect.height << endl;
 }
 
 void FBEditor::performSearch()

@@ -3,6 +3,7 @@
 #include <string>
 
 #include "database.h"
+#include "gui.h"
 #include "raygui.h"
 
 using namespace std;
@@ -10,11 +11,19 @@ using namespace std;
 class FBEditor
 {
 private:
-	float window_width = 0;
-	float window_height = 0;
 
-	float search_panel_width = 0;
-	float search_panel_height = 0;
+	Rectangle window_rect;
+	
+	Rectangle search_panel_rect;
+	FBGuiPanel search_panel;
+	FBGuiLabel search_label;
+	FBGuiTextBox search_box;
+	FBGuiButton search_button;
+
+
+
+	Rectangle view_panel;
+	Rectangle database_panel;
 
 	float view_panel_width = 0;
 	float view_panel_height = 0;
@@ -39,10 +48,13 @@ private:
 
 	void initWindow();
 	void drawWindow();
-	void drawSearchPanel(float x, float y, float w, float h);
+
+	void updateSearchPanelFrames(float x, float y, float w, float h);
+	void drawSearchPanel();
+
 	void drawViewPanel(float x, float y, float w, float h);
 	void drawDatabasePanel(float x, float y, float w, float h);
-	void updateFrameSizes(float new_width, float new_height);
+	void updateFrameSizes(float new_width, float new_height); // TODO: update all UI element sizes here too
 	void performSearch();
 	void moveToTaxon(FBTaxon* taxon);
 	void triggerModal(string title, string message, string options, void (FBEditor::* callback)(int));

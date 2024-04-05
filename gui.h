@@ -15,12 +15,22 @@ public:
 	virtual void draw() abstract;
 };
 
+class FBGuiPanel : public FBGuiElement
+{
+public:
+	Color border;
+	Color background;
+	int border_width = 4;
+
+	void draw() override;
+};
+
 class FBGuiTextElement : public FBGuiElement
 {
 public:
 	GuiTextAlignment horizontal_align = GuiTextAlignment::TEXT_ALIGN_CENTER;
 	GuiTextAlignmentVertical vertical_align = GuiTextAlignmentVertical::TEXT_ALIGN_MIDDLE;
-	string text = "text";
+	string text = "";
 	GuiIconName icon = GuiIconName::ICON_NONE;
 };
 

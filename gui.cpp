@@ -1,5 +1,8 @@
 #include "gui.h"
 
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+
 #define TEXTBOX_BUFFER_LENGTH 2048
 
 void FBGuiLabel::draw()
@@ -53,6 +56,7 @@ void FBGuiTextBox::draw()
 FBGuiTextBox::FBGuiTextBox()
 {
     buffer = new char[TEXTBOX_BUFFER_LENGTH];
+    memset(buffer, '\0', TEXTBOX_BUFFER_LENGTH);
 }
 
 FBGuiTextBox::~FBGuiTextBox()
@@ -104,9 +108,18 @@ void FBGuiTextModal::draw()
 FBGuiTextModal::FBGuiTextModal()
 {
     buffer = new char[TEXTBOX_BUFFER_LENGTH];
+    memset(buffer, '\0', TEXTBOX_BUFFER_LENGTH);
 }
 
 FBGuiTextModal::~FBGuiTextModal()
 {
     delete buffer;
+}
+
+void FBGuiPanel::draw()
+{
+    if (enabled) GuiEnable();
+    else GuiDisable();
+
+    GuiDrawRectangle(rect, border_width, border, background);
 }

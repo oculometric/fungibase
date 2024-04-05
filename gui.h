@@ -50,14 +50,19 @@ public:
 	void draw() override;
 };
 
-class FBGuiTextBox : public FBGuiTextElement
+class FBGuiTextBox : public FBGuiElement
 {
 private:
 	char* buffer = NULL;
 	bool focussed = false;
 	bool focus_lost = false;
 public:
+	GuiTextAlignment horizontal_align = GuiTextAlignment::TEXT_ALIGN_CENTER;
+	GuiTextAlignmentVertical vertical_align = GuiTextAlignmentVertical::TEXT_ALIGN_MIDDLE;
+
 	bool wasFocusLost();
+	void setText(const char* str);
+	string getText();
 
 	void draw() override;
 

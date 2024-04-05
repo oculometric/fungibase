@@ -20,23 +20,25 @@ private:
 	FBGuiTextBox search_box;
 	FBGuiButton search_button;
 
+	Rectangle view_panel_rect;
 
+	Rectangle database_panel_rect;
+	FBGuiPanel database_panel;
+	FBGuiLabel database_label;
+	FBGuiLabel database_file_label;
+	FBGuiTextBox database_file_box;
+	FBGuiButton database_file_button;
+	FBGuiButton database_overwrite_button;
+	FBGuiButton database_reload_button;
+	FBGuiButton database_load_button;
 
-	Rectangle view_panel;
-	Rectangle database_panel;
 
 	float view_panel_width = 0;
 	float view_panel_height = 0;
 
-	float database_panel_width = 0;
-	float database_panel_height = 0;
-
 	FBDatabase* database = NULL;
-	char* database_address = NULL;
 
 	FBTaxon* current_taxon = NULL;
-	char* search_text = NULL;
-	bool search_box_focussed = false;
 	char* description_text = NULL;
 	bool is_viewing_child_taxa = false;
 	
@@ -53,7 +55,10 @@ private:
 	void drawSearchPanel();
 
 	void drawViewPanel(float x, float y, float w, float h);
-	void drawDatabasePanel(float x, float y, float w, float h);
+	
+	void updateDatabasePanelFrames(float x, float y, float w, float h);
+	void drawDatabasePanel();
+
 	void updateFrameSizes(float new_width, float new_height); // TODO: update all UI element sizes here too
 	void performSearch();
 	void moveToTaxon(FBTaxon* taxon);

@@ -31,6 +31,21 @@ void FBEditor::initWindow()
     search_label.icon = GuiIconName::ICON_LENS_BIG;
     search_button.icon = GuiIconName::ICON_LENS;
 
+    // view panel setup
+
+    // dataase panel setup
+    database_panel.border = GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL));
+    database_panel.background = GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR));
+    database_label.text = "database";
+    database_label.icon = GuiIconName::ICON_GRID_FILL;
+    database_file_label.text = "file:";
+    database_file_label.horizontal_align = GuiTextAlignment::TEXT_ALIGN_RIGHT;
+    database_file_button.icon = GuiIconName::ICON_FOLDER_FILE_OPEN;
+    database_overwrite_button.text = "overwrite stored";
+    database_overwrite_button.icon = GuiIconName::ICON_STEP_INTO;
+    database_reload_button.text = "reload from disk";
+    database_reload_button.icon = GuiIconName::ICON_STEP_OUT;
+
     // mainloop
     while (!WindowShouldClose())
     {
@@ -57,7 +72,7 @@ void FBEditor::drawWindow()
         // view panel
         drawViewPanel(search_panel_rect.width, 0, view_panel_width, view_panel_height);
         // database panel
-        drawDatabasePanel(0, search_panel_rect.height, database_panel_width, database_panel_height);
+        drawDatabasePanel();
     }
     else
     {
@@ -199,44 +214,59 @@ void FBEditor::drawViewPanel(float x, float y, float w, float h)
 
 }
 
-void FBEditor::drawDatabasePanel(float x, float y, float w, float h)
+void FBEditor::updateDatabasePanelFrames(float x, float y, float w, float h)
 {
-    //GuiDrawRectangle(Rectangle{ x, y, w, h }, 4, GetColor(GuiGetStyle(GuiControl::DEFAULT, BORDER_COLOR_NORMAL)), GetColor(GuiGetStyle(GuiControl::DEFAULT, GuiDefaultProperty::BACKGROUND_COLOR)));
-    // database label
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+    database_panel.rect = Rectangle{ x, y, w, h };
     float y_offset = y;
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 }, "#101# database");
+    database_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset + BORDER_OFFSET, w - BORDER_OFFSET_2, 40 };
     y_offset += 40 + BORDER_OFFSET;
+    database_file_label.rect = Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT };
+    database_file_box.rect = Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120 - TEXT_LABEL_HEIGHT, TEXT_LABEL_HEIGHT };
+    database_file_button.rect = Rectangle{ w - BORDER_OFFSET - TEXT_LABEL_HEIGHT, y_offset, TEXT_LABEL_HEIGHT, TEXT_LABEL_HEIGHT };
+    y_offset += TEXT_LABEL_HEIGHT;
+    y_offset += TEXT_LABEL_HEIGHT;
+    database_overwrite_button.rect = Rectangle{ x + BORDER_OFFSET, y_offset, (w / 2) - BORDER_OFFSET, TEXT_LABEL_HEIGHT };
+    database_reload_button.rect = Rectangle{ x + (w / 2), y_offset, (w / 2) - BORDER_OFFSET, TEXT_LABEL_HEIGHT };
+    y_offset += TEXT_LABEL_HEIGHT;
+    database_load_button.rect = Rectangle{ x + BORDER_OFFSET, y_offset, w - BORDER_OFFSET_2, TEXT_LABEL_HEIGHT };
+}
 
-    // file address
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
-    GuiSetStyle(GuiControl::DEFAULT, GuiDefaultProperty::TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);
-    GuiLabel(Rectangle{ x + BORDER_OFFSET, y_offset, 120, TEXT_LABEL_HEIGHT }, "file:");
+void FBEditor::drawDatabasePanel()
+{
+    // update values
     bool database_currently_loaded = database && database->isOpen();
-    GuiSetStyle(GuiControl::LABEL, GuiControlProperty::TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiTextBox(Rectangle{ x + BORDER_OFFSET + 120, y_offset, w - BORDER_OFFSET_2 - 120 - TEXT_LABEL_HEIGHT, TEXT_LABEL_HEIGHT }, database_address, 4096, !database_currently_loaded);
-    if (database_currently_loaded) GuiDisable();
-    if (GuiButton(Rectangle{ w - BORDER_OFFSET - TEXT_LABEL_HEIGHT, y_offset, TEXT_LABEL_HEIGHT, TEXT_LABEL_HEIGHT }, "#1#"))
+    database_file_box.enabled = !database_currently_loaded;
+    database_file_button.enabled = !database_currently_loaded;
+    database_overwrite_button.enabled = database_currently_loaded;
+    database_reload_button.enabled = database_currently_loaded;
+    database_load_button.text = database_currently_loaded ? "unload from memory" : "load from disk";
+    database_load_button.icon = database_currently_loaded ? GuiIconName::ICON_ZOOM_SMALL : GuiIconName::ICON_ZOOM_ALL;
+
+    // draw elements
+    database_panel.draw();
+    database_label.draw();
+    database_file_label.draw();
+    database_file_box.draw();
+    database_file_button.draw();
+    database_overwrite_button.draw();
+    database_reload_button.draw();
+    database_load_button.draw();
+
+    // respond to input
+    if (database_file_button.wasPressed())
     {
         // TODO: show file select dialog
+        cout << "TODO file selector" << endl;
     }
-    GuiEnable();
-    y_offset += TEXT_LABEL_HEIGHT;
-
-    y_offset += TEXT_LABEL_HEIGHT;
 
     // save/load buttons
-    if (!database_currently_loaded) GuiDisable();
-    if (GuiButton(Rectangle{ x + BORDER_OFFSET, y_offset, (w / 2) - BORDER_OFFSET, TEXT_LABEL_HEIGHT }, "#209#overwrite stored"))
+    if (database_overwrite_button.wasPressed())
         triggerModal("WARNING", "this operation will overwrite the copy of \nthe database stored on disk \nwith the version in memory. \nproceed?", "no;yes", &FBEditor::flushDatabaseCallback);
-    if (GuiButton(Rectangle{ x + (w / 2), y_offset, (w / 2) - BORDER_OFFSET, TEXT_LABEL_HEIGHT }, "#210#reload from disk"))
+    if (database_reload_button.wasPressed())
         triggerModal("WARNING", "this operation will overwrite the copy of \nthe database stored in memory with the\n version from the disk. \nunsaved modifications will be lost! \nproceed?", "no;yes", &FBEditor::reloadDatabaseCallback);
-    GuiEnable();
-    y_offset += TEXT_LABEL_HEIGHT;
-
+    
     // load/unload button
-    if (GuiButton(Rectangle{ x + BORDER_OFFSET, y_offset, w - BORDER_OFFSET_2, TEXT_LABEL_HEIGHT }, database_currently_loaded ? "#103#unload from memory" : "#106#load from disk"))
+    if (database_load_button.wasPressed())
     {
         if (database_currently_loaded)
             triggerModal("WARNING", "this operation will unload the database from memory.\nunsaved changes will be lost!\nproceed?", "no;yes", &FBEditor::unloadDatabaseCallback);
@@ -248,7 +278,7 @@ void FBEditor::drawDatabasePanel(float x, float y, float w, float h)
                 database = NULL;
                 current_taxon = NULL;
             }
-            database = new FBDatabase(string(database_address));
+            database = new FBDatabase(database_file_box.getText());
             database->reload();
             if (!database->isOpen())
             {
@@ -307,15 +337,15 @@ void FBEditor::updateFrameSizes(float new_width, float new_height)
     view_panel_width = window_rect.width - search_panel_rect.width;
     view_panel_height = window_rect.height;
 
-    database_panel_width = search_panel_rect.width;
-    database_panel_height = 240;
+    database_panel_rect = Rectangle{ 0, search_panel_rect.height, search_panel_rect.width, window_rect.height - search_panel_rect.height };
+    updateDatabasePanelFrames(database_panel_rect.x, database_panel_rect.y, database_panel_rect.width, database_panel_rect.height);
 
     cout << "new window size: " << window_rect.width << " " << window_rect.height << endl;
 }
 
 void FBEditor::performSearch()
 {
-    cout << "searching for '" << search_text << "'" << endl;
+    cout << "searching for '" << search_box.getText() << "'" << endl;
     cout << "NOT IMPLEMENTED" << endl;
 }
 
@@ -330,16 +360,12 @@ void FBEditor::moveToTaxon(FBTaxon* taxon)
 
 FBEditor::FBEditor(string database_path)
 {
-    database_address = new char[256] {'\0'};
-    memcpy(database_address, (void*)(database_path.c_str()), database_path.length());
-
 	if (!database_path.empty())
 		database = new FBDatabase(database_path);
+    database_file_box.setText(database_path.c_str());
 
     database->reload();
     moveToTaxon(database->find("Fungi", FBTaxonLevel::KINGDOM));
-
-    search_text = new char[256] {'\0'};
 
 	initWindow();
 }

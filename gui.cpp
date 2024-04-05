@@ -35,6 +35,17 @@ bool FBGuiTextBox::wasFocusLost()
     return focus_lost;
 }
 
+void FBGuiTextBox::setText(const char* str)
+{
+    memset(buffer, '\0', TEXTBOX_BUFFER_LENGTH);
+    memcpy(buffer, str, strlen(str));
+}
+
+string FBGuiTextBox::getText()
+{
+    return string(buffer);
+}
+
 void FBGuiTextBox::draw()
 {
     if (enabled) GuiEnable();
